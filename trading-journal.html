@@ -65,10 +65,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .form-rule { font-size: 11px; color: var(--success); background: #1a2a1a; border: 1px solid #2a3a2a; padding: 3px 8px; border-radius: 20px; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 14px; }
 .form-group label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
-.form-group input, .form-group select {
-width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm);
-color: var(--text); padding: 8px 10px; font-size: 13px; outline: none; transition: border .15s;
-}
+.form-group input, .form-group select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 8px 10px; font-size: 13px; outline: none; transition: border .15s; }
 .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
 .form-group select option { background: var(--bg3); }
 .checks-row { display: flex; gap: 20px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
@@ -87,7 +84,7 @@ color: var(--text); padding: 8px 10px; font-size: 13px; outline: none; transitio
 .ai-textarea:focus { border-color: var(--primary); }
 .ai-button { background: var(--primary); color: #fff; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; }
 .ai-button:hover { background: var(--primary2); }
-.ai-response { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-top: 10px; font-size: 12px; color: var(--text2); max-height: 200px; overflow-y: auto; display: none; }
+.ai-response { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-top: 10px; font-size: 12px; color: var(--text2); max-height: 300px; overflow-y: auto; display: none; }
 
 .table-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; overflow-x: auto; }
 .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
@@ -105,7 +102,6 @@ tr:hover td { background: rgba(255,255,255,.02); }
 .badge.be { background: #2a2010; color: var(--warning); }
 .badge.long { background: #1a2a3e; color: #5ba3f5; }
 .badge.short { background: #2e1a2a; color: #e06090; }
-.badge.check { background: #1a2e1a; color: var(--success); font-size: 10px; }
 .btn-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: color .15s; }
 .btn-del:hover { color: var(--danger); }
 .empty { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; }
@@ -149,20 +145,6 @@ const MEMBERS = ['Nassim','Noa','Joseph','Owen','Nedrix'];
 const PAIRS = ['EUR/USD','GBP/USD','USD/JPY','AUD/USD','EUR/JPY','GBP/JPY','USD/CHF','USD/CAD','EUR/GBP','EUR/AUD','GBP/AUD','AUD/JPY','AUD/CAD','CAD/JPY','EUR/CAD','GBP/CAD','AUDJPY'];
 const TIMEFRAMES = ['1M','5M','15M','30M','1H','4H','Daily'];
 const SESSIONS = ['Asie','Londres','New York'];
-const CHECKLIST_ITEMS = [
-'Tendance claire identifiée sur HTF',
-'OB significatif identifié sur M15',
-'OB détaillé confirmé sur M5',
-'Zone OTE Fibonacci 0.618–0.786',
-'Liquidité prise dans la zone OTE',
-'SMT divergence vérifiée',
-'Réaction de prix confirmée',
-'SL placé derrière OB HTF',
-'RR ≥ 2 vérifié',
-'Risque conforme au money management',
-'Une seule position ouverte',
-'Pas de SL touché'
-];
 
 let currentMember = 'Nassim';
 let perfChart, pieChart, rrChart;
@@ -170,21 +152,17 @@ let formChecks={ote:true,liq:false,smt:false};
 
 function loadTrades(m) { try { return JSON.parse(localStorage.getItem('rsc_trades_'+m)||'[]'); } catch(e) { return []; } }
 function saveTrades(m,t) { try { localStorage.setItem('rsc_trades_'+m, JSON.stringify(t)); } catch(e) {} }
-function loadChecks(m) { try { return JSON.parse(localStorage.getItem('rsc_checks_'+m)||'[]'); } catch(e) { return []; } }
-function saveChecks(m,c) { try { localStorage.setItem('rsc_checks_'+m, JSON.stringify(c)); } catch(e) {} }
 
 function getStats(trades) {
 const wins = trades.filter(t=>t.result==='WIN');
 const losses = trades.filter(t=>t.result==='LOSS');
 const bes = trades.filter(t=>t.result==='BE');
-const rrs = trades.map(t=>parseFloat(t.rr||0));
 const cumRR = trades.reduce((s,t)=>s+(t.result==='WIN'?parseFloat(t.rr||0):(t.result==='LOSS'?-parseFloat(t.rr||1):0)),0);
 const avgRR = wins.length ? wins.reduce((s,t)=>s+parseFloat(t.rr||0),0)/wins.length : 0;
 const wr = trades.length ? Math.round(wins.length/trades.length*100) : 0;
 const pf = losses.length ? (wins.length * avgRR) / (losses.length * 1) : (wins.length ? avgRR : 0);
 const maxWin = wins.length ? Math.max(...wins.map(t=>parseFloat(t.rr||0))) : 0;
-const maxLoss = losses.length ? Math.max(...losses.map(t=>parseFloat(t.rr||0))) : 0;
-return {wins:wins.length, losses:losses.length, bes:bes.length, total:trades.length, cumRR, avgRR, wr, pf:pf.toFixed(2), maxWin, maxLoss};
+return {wins:wins.length, losses:losses.length, bes:bes.length, total:trades.length, cumRR, avgRR, wr, pf:pf.toFixed(2), maxWin};
 }
 
 function switchMember(m, el) {
@@ -203,7 +181,6 @@ perfChart=pieChart=rrChart=null;
 function render() {
 if(currentMember === 'GROUPE') { renderGroupe(); return; }
 const trades = loadTrades(currentMember);
-const checks = loadChecks(currentMember);
 const s = getStats(trades);
 
 document.getElementById('app-content').innerHTML = `
@@ -228,9 +205,9 @@ document.getElementById('app-content').innerHTML = `
 </div>
 
 <div class="ai-section">
-<div class="ai-title">🤖 Assistant IA Claude</div>
+<div class="ai-title">🤖 Assistant IA Groq</div>
 <div style="font-size:12px;color:#666;margin-bottom:10px">Colle un texte ou tableau pour ajouter des trades automatiquement</div>
-<textarea class="ai-textarea" id="aiInput" placeholder="Ex: 17/06/2026 EUR/USD Buy Londres 5M +2.3RR WIN"></textarea>
+<textarea class="ai-textarea" id="aiInput" placeholder="Ex: 17/06 EUR/USD Buy 5M +2.3RR WIN"></textarea>
 <div style="display:flex;gap:8px">
 <button class="ai-button" onclick="parseWithAI()">Analyser avec IA</button>
 <button class="ai-button" onclick="document.getElementById('aiInput').value='';" style="background:#555">Effacer</button>
@@ -348,9 +325,58 @@ function deleteTrade(i) { if(!confirm('Supprimer ?')) return; const trades=loadT
 function clearTrades() { if(!confirm('Effacer TOUS les trades ?')) return; saveTrades(currentMember,[]); destroyCharts(); render(); }
 
 async function parseWithAI() {
-const input=document.getElementById('aiInput').value.trim(); if(!input) {alert('Colle un texte'); return;}
-const resp=document.getElementById('aiResponse'); resp.style.display='block'; resp.textContent='📡 Analyse en cours...';
-try { const result=await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'claude-sonnet-4-6', max_tokens:500, messages:[{role:'user', content:`Tu es un assistant pour un journal de trading. Extrait automatiquement les informations du texte suivant et réponds en JSON: date, paire, direction (LONG/SHORT), timeframe, session (Asie/Londres/New York), RR, résultat (WIN/LOSS/BE), notes.\n\nTexte: ${input}\n\nRéponds UNIQUEMENT en JSON valide, sans explications.`}]})}); const data=await result.json(); const text=data.content[0].text; const parsed=JSON.parse(text); resp.textContent='✅ '+JSON.stringify(parsed, null, 2); } catch(e) { resp.textContent='❌ Erreur: '+e.message; } }
+const input=document.getElementById('aiInput').value.trim(); if(!input) {alert('Colle un texte ou tableau'); return;}
+const resp=document.getElementById('aiResponse'); resp.style.display='block'; resp.textContent='🤖 Groq analyse en cours...';
+try { 
+const result=await fetch('https://api.groq.com/openai/v1/chat/completions', {
+method:'POST', 
+headers:{'Content-Type':'application/json', 'Authorization':'Bearer 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'}, 
+body:JSON.stringify({
+model:'mixtral-8x7b-32768', 
+messages:[{
+role:'user', 
+content:`Tu es un expert en trading. Extrait AUTOMATIQUEMENT les trades du texte/tableau suivant. Pour CHAQUE trade, réponds en JSON avec: date (YYYY-MM-DD), paire, direction (LONG ou SHORT), timeframe (1M/5M/15M/30M/1H/4H/Daily), session (Asie/Londres/New York), RR (nombre), résultat (WIN/LOSS/BE), notes.\n\nTexte/Tableau:\n${input}\n\nRéponds avec un JSON array: [{date, paire, direction, timeframe, session, rr, résultat, notes}, ...]\nPas d'explications, juste le JSON.`
+}],
+temperature:0.3
+})
+}); 
+const data=await result.json(); 
+const text=data.choices[0].message.content; 
+const parsed=JSON.parse(text); 
+resp.innerHTML='✅ <strong>Trades trouvés:</strong><pre style="overflow-x:auto;font-size:11px">'+JSON.stringify(parsed, null, 2)+'</pre><button onclick="addParsedTrades('+JSON.stringify(JSON.stringify(parsed))+')" style="margin-top:10px;background:var(--primary);color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer">➕ Ajouter ces trades</button>'; 
+} catch(e) { resp.textContent='❌ Erreur Groq: '+e.message; } }
+
+function addParsedTrades(tradesStr) {
+try {
+const trades = JSON.parse(tradesStr);
+if(!Array.isArray(trades)) {alert('Format invalide'); return;}
+const currentTrades=loadTrades(currentMember);
+trades.forEach(t=>{
+if(t.date && t.paire && t.rr) {
+currentTrades.push({
+date: t.date,
+pair: t.paire || t.pair,
+dir: (t.direction || t.dir || 'LONG').toUpperCase(),
+tf: t.timeframe || t.tf || '15M',
+session: t.session || '',
+rr: parseFloat(t.rr),
+risk: 1,
+result: (t.résultat || t.result || 'WIN').toUpperCase(),
+notes: t.notes || '',
+ote: false,
+liq: false,
+smt: false
+});
+}
+});
+saveTrades(currentMember, currentTrades);
+document.getElementById('aiInput').value='';
+document.getElementById('aiResponse').style.display='none';
+destroyCharts();
+render();
+alert('✅ '+trades.length+' trades ajoutés !');
+} catch(e) { alert('Erreur: '+e.message); }
+}
 
 function renderGroupe() {
 let allTrades=[]; const memberStats=MEMBERS.map(m=>{const t=loadTrades(m); allTrades=[...allTrades,...t.map(tr=>({...tr,member:m}))]; return {name:m,...getStats(t)};});
