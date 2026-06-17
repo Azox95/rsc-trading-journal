@@ -65,10 +65,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .form-rule { font-size: 11px; color: var(--primary); background: #3a1a2e; border: 1px solid #4a2a4e; padding: 3px 8px; border-radius: 20px; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 14px; }
 .form-group label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
-.form-group input, .form-group select {
-width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm);
-color: var(--text); padding: 8px 10px; font-size: 13px; outline: none; transition: border .15s;
-}
+.form-group input, .form-group select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 8px 10px; font-size: 13px; outline: none; transition: border .15s; }
 .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
 .form-group select option { background: var(--bg3); }
 .form-bottom { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -83,7 +80,7 @@ color: var(--text); padding: 8px 10px; font-size: 13px; outline: none; transitio
 .ai-textarea:focus { border-color: var(--primary); }
 .ai-button { background: var(--primary); color: #fff; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; }
 .ai-button:hover { background: var(--primary2); }
-.ai-response { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-top: 10px; font-size: 12px; color: var(--text2); max-height: 200px; overflow-y: auto; display: none; }
+.ai-response { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-top: 10px; font-size: 12px; color: var(--text2); max-height: 300px; overflow-y: auto; display: none; }
 
 .table-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; overflow-x: auto; }
 .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
@@ -119,10 +116,10 @@ tr:hover td { background: rgba(255,255,255,.02); }
 
 <div class="header">
 <div class="logo">
-<div class="logo-icon">📈</div>
+<div class="logo-icon">📊</div>
 <div class="logo-text">
 <h1>RSC Backtesting Journal</h1>
-<p>WEN Agency — Analyse & Validation de Stratégies</p>
+<p>WEN Agency — Stratégie Poupée Russe</p>
 </div>
 </div>
 <div class="member-tabs">
@@ -145,7 +142,7 @@ const PAIRS = ['EUR/USD','GBP/USD','USD/JPY','AUD/USD','EUR/JPY','GBP/JPY','USD/
 const TIMEFRAMES = ['1M','5M','15M','30M','1H','4H','Daily'];
 
 let currentMember = 'Nassim';
-let perfChart, pieChart, rrChart;
+let perfChart, pieChart;
 
 function loadBacktests(m) { try { return JSON.parse(localStorage.getItem('rsc_backtests_'+m)||'[]'); } catch(e) { return []; } }
 function saveBacktests(m,t) { try { localStorage.setItem('rsc_backtests_'+m, JSON.stringify(t)); } catch(e) {} }
@@ -171,8 +168,8 @@ render();
 }
 
 function destroyCharts() {
-[perfChart, pieChart, rrChart].forEach(c=>{if(c){c.destroy();}});
-perfChart=pieChart=rrChart=null;
+[perfChart, pieChart].forEach(c=>{if(c){c.destroy();}});
+perfChart=pieChart=null;
 }
 
 function render() {
@@ -182,10 +179,10 @@ const s = getStats(backtests);
 
 document.getElementById('app-content').innerHTML = `
 <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
-<span style="font-size:20px">📈</span>
+<span style="font-size:20px">🧪</span>
 <div>
-<div style="font-size:15px;font-weight:600">${currentMember} — Backtests</div>
-<div style="font-size:12px;color:#666">Journal des backtests isolés de la stratégie RSC</div>
+<div style="font-size:15px;font-weight:600">${currentMember}</div>
+<div style="font-size:12px;color:#666">Journal de backtesting — Stratégie RSC Trading</div>
 </div>
 </div>
 
@@ -197,14 +194,14 @@ document.getElementById('app-content').innerHTML = `
 </div>
 
 <div class="analysis-grid">
-<div class="analysis-card"><div class="analysis-title">Paires les plus testées</div><div id="pairAnalysis"></div></div>
-<div class="analysis-card"><div class="analysis-title">Performance par Timeframe</div><div id="tfAnalysis"></div></div>
+<div class="analysis-card"><div class="analysis-title">Analyse par Paire</div><div id="pairAnalysis"></div></div>
+<div class="analysis-card"><div class="analysis-title">Analyse par Timeframe</div><div id="tfAnalysis"></div></div>
 </div>
 
 <div class="ai-section">
-<div class="ai-title">🤖 Assistant IA Claude — Backtesting</div>
-<div style="font-size:12px;color:#666;margin-bottom:10px">Colle tes résultats de backtest pour extraction automatique</div>
-<textarea class="ai-textarea" id="aiInput" placeholder="Ex: EUR/USD Buy 15M +2.5RR WIN"></textarea>
+<div class="ai-title">🤖 Assistant IA Groq</div>
+<div style="font-size:12px;color:#666;margin-bottom:10px">Colle un texte ou tableau pour ajouter des backtests automatiquement</div>
+<textarea class="ai-textarea" id="aiInput" placeholder="Ex: 17/06 EUR/USD Buy 5M +2.3RR WIN Stratégie MA50"></textarea>
 <div style="display:flex;gap:8px">
 <button class="ai-button" onclick="parseWithAI()">Analyser avec IA</button>
 <button class="ai-button" onclick="document.getElementById('aiInput').value='';" style="background:#555">Effacer</button>
@@ -214,21 +211,21 @@ document.getElementById('app-content').innerHTML = `
 
 <div class="form-card">
 <div class="form-header">
-<div class="form-title">➕ Ajouter un backtest</div>
-<div class="form-rule">✓ Données séparées du trading réel</div>
+<div class="form-title">➕ Ajouter un backtest manuellement</div>
+<div class="form-rule">✓ RR illimité (négatif, 0, 0.5, 1, 2+, etc.)</div>
 </div>
 <div class="form-grid">
-<div class="form-group"><label>Date test</label><input type="date" id="f-date"/></div>
+<div class="form-group"><label>Date</label><input type="date" id="f-date"/></div>
 <div class="form-group"><label>Paire</label><select id="f-pair">${PAIRS.map(p=>'<option>'+p+'</option>').join('')}</select></div>
 <div class="form-group"><label>Direction</label><select id="f-dir"><option>LONG</option><option>SHORT</option></select></div>
 <div class="form-group"><label>Timeframe</label><select id="f-tf">${TIMEFRAMES.map(tf=>'<option>'+tf+'</option>').join('')}</select></div>
 <div class="form-group"><label>RR réalisé</label><input type="number" id="f-rr" placeholder="ex: 2.5" step="0.1"/></div>
 <div class="form-group"><label>Résultat</label><select id="f-result"><option>WIN</option><option>LOSS</option><option>BE</option></select></div>
-<div class="form-group"><label>Stratégie testée</label><input type="text" id="f-strategy" placeholder="ex: Poupée Russe HTF"/></div>
+<div class="form-group"><label>Stratégie testée</label><input type="text" id="f-strategy" placeholder="ex: MA50 crossover"/></div>
 </div>
 <div class="form-bottom">
-<input type="text" id="f-notes" placeholder="Observations / ajustements..."/>
-<button class="btn-add" onclick="addBacktest()">Ajouter backtest</button>
+<input type="text" id="f-notes" placeholder="Notes / observations..."/>
+<button class="btn-add" onclick="addBacktest()">Ajouter</button>
 </div>
 </div>
 
@@ -259,15 +256,16 @@ document.getElementById('metrics').innerHTML = `
 <div class="metric"><div class="metric-label">Profit Factor</div><div class="metric-value" style="color:${s.pf>=1.2?'var(--success)':'var(--danger)'}">${s.pf}</div></div>
 <div class="metric"><div class="metric-label">Wins</div><div class="metric-value green">${s.wins}</div></div>
 <div class="metric"><div class="metric-label">Losses</div><div class="metric-value red">${s.losses}</div></div>
+<div class="metric"><div class="metric-label">Best Win</div><div class="metric-value green">${s.maxWin.toFixed(2)}R</div></div>
 `;
 }
 
 function renderPerfChart(backtests) {
 const ctx = document.getElementById('perfChart');
 if(!ctx) return;
-if(!backtests.length){ctx.parentElement.innerHTML='<div class="empty">Aucun backtest — commence tes analyses</div>';return;}
+if(!backtests.length){ctx.parentElement.innerHTML='<div class="empty">Aucun backtest — ajoute ton premier setup</div>';return;}
 let cum=0; const labels=[],data=[];
-backtests.forEach((t,i)=>{cum+=t.result==='WIN'?parseFloat(t.rr||0):(t.result==='LOSS'?-parseFloat(t.rr||1):0); labels.push('BT'+(i+1)); data.push(parseFloat(cum.toFixed(2)));});
+backtests.forEach((t,i)=>{cum+=t.result==='WIN'?parseFloat(t.rr||0):(t.result==='LOSS'?-parseFloat(t.rr||1):0); labels.push('B'+(i+1)); data.push(parseFloat(cum.toFixed(2)));});
 perfChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'RR cumulé',data,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,0.1)',borderWidth:2,pointRadius:3,fill:true,tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#666',maxTicksLimit:10}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#666',callback:v=>v+'R'}}}}});
 }
 
@@ -297,7 +295,7 @@ function renderBacktestList(backtests) {
 const el=document.getElementById('backtest-list');
 if(!backtests.length){el.innerHTML='<div class="empty">Aucun backtest enregistré</div>';return;}
 let html='<table><thead><tr><th>Date</th><th>Paire</th><th>Dir.</th><th>TF</th><th>RR</th><th>Résultat</th><th>Stratégie</th><th>Notes</th><th></th></tr></thead><tbody>';
-[...backtests].reverse().forEach((t,ri)=>{const i=backtests.length-1-ri; html+=`<tr><td style="color:#666;font-size:12px">${t.date||'—'}</td><td>${t.pair}</td><td><span class="badge ${t.dir.toLowerCase()}">${t.dir}</span></td><td style="color:#666;font-size:12px">${t.tf}</td><td style="font-weight:600;color:${parseFloat(t.rr)>0?'#4caf50':'#E24B4A'}">${t.rr}R</td><td><span class="badge ${t.result.toLowerCase()}">${t.result}</span></td><td style="font-size:12px;color:#666">${t.strategy||'—'}</td><td style="color:#666;font-size:12px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${t.notes||'—'}</td><td><button class="btn-del" onclick="deleteBacktest(${i})">✕</button></td></tr>`;});
+[...backtests].reverse().forEach((t,ri)=>{const i=backtests.length-1-ri; html+=`<tr><td style="color:#666;font-size:12px">${t.date||'—'}</td><td>${t.pair}</td><td><span class="badge ${t.dir.toLowerCase()}">${t.dir}</span></td><td style="color:#666;font-size:12px">${t.tf}</td><td style="font-weight:600;color:${parseFloat(t.rr)>0?'#4caf50':'#E24B4A'}">${t.rr}R</td><td><span class="badge ${t.result.toLowerCase()}">${t.result}</span></td><td style="font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${t.strategy||'—'}</td><td style="color:#666;font-size:12px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${t.notes||'—'}</td><td><button class="btn-del" onclick="deleteBacktest(${i})">✕</button></td></tr>`;});
 el.innerHTML=html+'</tbody></table>';
 }
 
@@ -313,14 +311,59 @@ function deleteBacktest(i) { if(!confirm('Supprimer ?')) return; const backtests
 function clearBacktests() { if(!confirm('Effacer TOUS les backtests ?')) return; saveBacktests(currentMember,[]); destroyCharts(); render(); }
 
 async function parseWithAI() {
-const input=document.getElementById('aiInput').value.trim(); if(!input) {alert('Colle un texte'); return;}
-const resp=document.getElementById('aiResponse'); resp.style.display='block'; resp.textContent='📡 Analyse en cours...';
-try { const result=await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'claude-sonnet-4-6', max_tokens:500, messages:[{role:'user', content:`Tu es un assistant pour un journal de backtesting. Extrait automatiquement les informations du texte suivant et réponds en JSON: date, paire, direction (LONG/SHORT), timeframe, RR, résultat (WIN/LOSS/BE), stratégie testée, notes.\n\nTexte: ${input}\n\nRéponds UNIQUEMENT en JSON valide.`}]})}); const data=await result.json(); const text=data.content[0].text; const parsed=JSON.parse(text); resp.textContent='✅ '+JSON.stringify(parsed, null, 2); } catch(e) { resp.textContent='❌ Erreur: '+e.message; } }
+const input=document.getElementById('aiInput').value.trim(); if(!input) {alert('Colle un texte ou tableau'); return;}
+const resp=document.getElementById('aiResponse'); resp.style.display='block'; resp.textContent='🤖 Groq analyse en cours...';
+try { 
+const result=await fetch('https://api.groq.com/openai/v1/chat/completions', {
+method:'POST', 
+headers:{'Content-Type':'application/json', 'Authorization':'Bearer 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'}, 
+body:JSON.stringify({
+model:'mixtral-8x7b-32768', 
+messages:[{
+role:'user', 
+content:`Tu es un expert en backtesting de trading. Extrait AUTOMATIQUEMENT les backtests du texte/tableau suivant. Pour CHAQUE backtest, réponds en JSON avec: date (YYYY-MM-DD), paire, direction (LONG ou SHORT), timeframe (1M/5M/15M/30M/1H/4H/Daily), RR (nombre), résultat (WIN/LOSS/BE), stratégie (texte court), notes.\n\nTexte/Tableau:\n${input}\n\nRéponds avec un JSON array: [{date, paire, direction, timeframe, rr, résultat, stratégie, notes}, ...]\nPas d'explications, juste le JSON.`
+}],
+temperature:0.3
+})
+}); 
+const data=await result.json(); 
+const text=data.choices[0].message.content; 
+const parsed=JSON.parse(text); 
+resp.innerHTML='✅ <strong>Backtests trouvés:</strong><pre style="overflow-x:auto;font-size:11px">'+JSON.stringify(parsed, null, 2)+'</pre><button onclick="addParsedBacktests('+JSON.stringify(JSON.stringify(parsed))+')" style="margin-top:10px;background:var(--primary);color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer">➕ Ajouter ces backtests</button>'; 
+} catch(e) { resp.textContent='❌ Erreur Groq: '+e.message; } }
+
+function addParsedBacktests(backtestsStr) {
+try {
+const backtests = JSON.parse(backtestsStr);
+if(!Array.isArray(backtests)) {alert('Format invalide'); return;}
+const currentBacktests=loadBacktests(currentMember);
+backtests.forEach(b=>{
+if(b.date && b.paire && b.rr) {
+currentBacktests.push({
+date: b.date,
+pair: b.paire || b.pair,
+dir: (b.direction || b.dir || 'LONG').toUpperCase(),
+tf: b.timeframe || b.tf || '15M',
+rr: parseFloat(b.rr),
+result: (b.résultat || b.result || 'WIN').toUpperCase(),
+strategy: b.stratégie || b.strategy || '',
+notes: b.notes || ''
+});
+}
+});
+saveBacktests(currentMember, currentBacktests);
+document.getElementById('aiInput').value='';
+document.getElementById('aiResponse').style.display='none';
+destroyCharts();
+render();
+alert('✅ '+backtests.length+' backtests ajoutés !');
+} catch(e) { alert('Erreur: '+e.message); }
+}
 
 function renderGroupe() {
 let allBacktests=[]; const memberStats=MEMBERS.map(m=>{const b=loadBacktests(m); allBacktests=[...allBacktests,...b.map(bt=>({...bt,member:m}))]; return {name:m,...getStats(b)};});
 const global=getStats(allBacktests);
-document.getElementById('app-content').innerHTML=`<div style="margin-bottom:16px"><div style="font-size:15px;font-weight:600">👥 GROUPE — Backtesting collectif</div></div><div class="metrics"><div class="metric"><div class="metric-label">Backtests groupe</div><div class="metric-value primary">${global.total}</div></div><div class="metric"><div class="metric-label">Winrate groupe</div><div class="metric-value ${global.wr>=50?'green':'red'}">${global.wr}%</div></div><div class="metric"><div class="metric-label">RR cumulé</div><div class="metric-value ${global.cumRR>=0?'green':'red'}">${global.cumRR.toFixed(2)}R</div></div><div class="metric"><div class="metric-label">Profit Factor</div><div class="metric-value" style="color:${global.pf>=1.2?'var(--success)':'var(--danger)'}">${global.pf}</div></div></div><div style="font-size:13px;font-weight:600;margin:20px 0">📊 Stats par membre</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${memberStats.map(m=>`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px"><div style="font-weight:600;color:var(--primary);margin-bottom:8px">${m.name}</div><div style="font-size:12px;line-height:1.6"><div>Backtests: <strong>${m.total}</strong></div><div>Winrate: <strong style="color:${m.wr>=50?'var(--success)':'var(--danger)'}">${m.wr}%</strong></div><div>RR cumulé: <strong style="color:${m.cumRR>=0?'var(--success)':'var(--danger)'}">${m.cumRR.toFixed(2)}R</strong></div><div>Wins: <strong style="color:var(--success)">${m.wins}</strong></div></div></div>`).join('')}</div>`;
+document.getElementById('app-content').innerHTML=`<div style="margin-bottom:16px"><div style="font-size:15px;font-weight:600">👥 GROUPE — Performance consolidée (Backtesting)</div></div><div class="metrics"><div class="metric"><div class="metric-label">Backtests groupe</div><div class="metric-value primary">${global.total}</div></div><div class="metric"><div class="metric-label">Winrate groupe</div><div class="metric-value ${global.wr>=50?'green':'red'}">${global.wr}%</div></div><div class="metric"><div class="metric-label">RR cumulé</div><div class="metric-value ${global.cumRR>=0?'green':'red'}">${global.cumRR.toFixed(2)}R</div></div><div class="metric"><div class="metric-label">Profit Factor</div><div class="metric-value" style="color:${global.pf>=1.2?'var(--success)':'var(--danger)'}">${global.pf}</div></div></div><div style="font-size:13px;font-weight:600;margin:20px 0">📊 Stats par membre</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">${memberStats.map(m=>`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px"><div style="font-weight:600;color:var(--primary);margin-bottom:8px">${m.name}</div><div style="font-size:12px;line-height:1.6"><div>Backtests: <strong>${m.total}</strong></div><div>Winrate: <strong style="color:${m.wr>=50?'var(--success)':'var(--danger)'}">${m.wr}%</strong></div><div>RR cumulé: <strong style="color:${m.cumRR>=0?'var(--success)':'var(--danger)'}">${m.cumRR.toFixed(2)}R</strong></div><div>Wins: <strong style="color:var(--success)">${m.wins}</strong></div><div>Losses: <strong style="color:var(--danger)">${m.losses}</strong></div></div></div>`).join('')}</div>`;
 }
 
 render();
