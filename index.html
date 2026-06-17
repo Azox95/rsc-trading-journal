@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSC Trading Group — WEN Agency Hub</title>
+<style>
+:root {
+--bg: #0f0f0f;
+--bg2: #1a1a1a;
+--bg3: #222;
+--border: #2a2a2a;
+--text: #f0f0f0;
+--text2: #888;
+--text3: #555;
+--primary: #378ADD;
+--primary2: #185FA5;
+--success: #4caf50;
+--danger: #E24B4A;
+--warning: #f0a030;
+--radius: 10px;
+--radius-sm: 6px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; min-height: 100vh; }
+
+.header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 24px; text-align: center; }
+.logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+.logo-icon { width: 48px; height: 48px; background: var(--primary); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header p { font-size: 14px; color: var(--text2); }
+
+.main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+/* HERO STATS */
+.hero-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; }
+.stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; }
+.stat-value.blue { color: var(--primary); }
+.stat-value.green { color: var(--success); }
+.stat-value.red { color: var(--danger); }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* NAVIGATION APPS */
+.nav-apps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+@media(max-width: 700px) { .nav-apps { grid-template-columns: 1fr; } }
+.app-card { background: linear-gradient(135deg, #1a2a3a 0%, var(--bg2) 100%); border: 2px solid var(--primary); border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; transition: all .2s; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; }
+.app-card:hover { border-color: #5ba3f5; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(55,138,221,0.15); }
+.app-icon { font-size: 36px; margin-bottom: 12px; }
+.app-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+.app-desc { font-size: 12px; color: var(--text2); }
+
+/* CLASSEMENT */
+.section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-title span { font-size: 20px; }
+
+.ranking-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.rank-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.rank-position { display: inline-block; background: var(--primary); color: #fff; font-weight: 700; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 14px; }
+.rank-name { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.rank-stat { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid #1e1e1e; }
+.rank-stat:last-child { border-bottom: none; }
+.rank-val { font-weight: 600; }
+.rank-label { color: var(--text3); }
+
+/* FOOTER */
+.footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; color: var(--text2); font-size: 12px; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+<div class="logo">
+<div class="logo-icon">💸</div>
+<div>
+<h1>RSC Trading Group</h1>
+<p>WEN Agency — Poupée Russe HTF → M15 → M5</p>
+</div>
+</div>
+</div>
+
+<div class="main">
+
+<!-- STATS GLOBALES -->
+<div class="hero-stats" id="globalStats"></div>
+
+<!-- NAVIGATION -->
+<div class="nav-apps">
+<a href="trading-journal.html" class="app-card">
+<div class="app-icon">📊</div>
+<div class="app-title">Trading Journal</div>
+<div class="app-desc">Suivi des trades réels</div>
+</a>
+<a href="backtesting-journal.html" class="app-card">
+<div class="app-icon">📈</div>
+<div class="app-title">Backtesting Journal</div>
+<div class="app-desc">Analyse des backtests</div>
+</a>
+</div>
+
+<!-- CLASSEMENT -->
+<div class="section-title"><span>🏆</span> Classement des membres</div>
+<div class="ranking-grid" id="ranking"></div>
+
+</div>
+
+<div class="footer">
+<p>RSC Trading Group — WEN Agency 2026 | Stratégie Poupée Russe | Données sauvegardées localement</p>
+</div>
+
+<script>
+const MEMBERS = ['Nassim', 'Noa', 'Joseph', 'Owen', 'Nedrix'];
+
+function loadTrades(m) {
+try { return JSON.parse(localStorage.getItem('rsc_trades_'+m)||'[]'); } catch(e) { return []; }
+}
+
+function getStats(trades) {
+const wins = trades.filter(t=>t.result==='WIN');
+const losses = trades.filter(t=>t.result==='LOSS');
+const bes = trades.filter(t=>t.result==='BE');
+const cumRR = trades.reduce((s,t)=>s+(t.result==='WIN'?parseFloat(t.rr||0):(t.result==='LOSS'?-parseFloat(t.rr||1):0)),0);
+const avgRR = wins.length ? wins.reduce((s,t)=>s+parseFloat(t.rr||0),0)/wins.length : 0;
+const wr = trades.length ? Math.round(wins.length/trades.length*100) : 0;
+const pf = losses.length ? (wins.length * avgRR) / (losses.length * 1) : (wins.length ? parseFloat(avgRR) : 0);
+return {wins:wins.length, losses:losses.length, bes:bes.length, total:trades.length, cumRR, avgRR, wr, pf:pf.toFixed(2)};
+}
+
+function renderGlobalStats() {
+let allTrades=[];
+MEMBERS.forEach(m=>{
+const trades=loadTrades(m);
+allTrades=[...allTrades,...trades];
+});
+const g=getStats(allTrades);
+document.getElementById('globalStats').innerHTML=`
+<div class="stat-card"><div class="stat-label">Trades groupe</div><div class="stat-value blue">${g.total}</div></div>
+<div class="stat-card"><div class="stat-label">Winrate groupe</div><div class="stat-value ${g.wr>=50?'green':'red'}">${g.wr}%</div></div>
+<div class="stat-card"><div class="stat-label">RR cumulé groupe</div><div class="stat-value ${g.cumRR>=0?'green':'red'}">${g.cumRR.toFixed(2)}R</div></div>
+<div class="stat-card"><div class="stat-label">Profit Factor</div><div class="stat-value" style="color:${g.pf>=1.2?'var(--success)':'var(--danger)'}">${g.pf}</div></div>
+`;
+}
+
+function renderRanking() {
+const stats=MEMBERS.map(m=>({name:m,...getStats(loadTrades(m))}));
+stats.sort((a,b)=>b.cumRR-a.cumRR);
+document.getElementById('ranking').innerHTML=stats.map((s,i)=>`
+<div class="rank-card">
+<div class="rank-position">${i+1}</div>
+<div class="rank-name">${s.name}</div>
+<div class="rank-stat"><span class="rank-label">Trades</span><span class="rank-val">${s.total}</span></div>
+<div class="rank-stat"><span class="rank-label">Winrate</span><span class="rank-val" style="color:${s.wr>=50?'var(--success)':'var(--danger)'}">${s.wr}%</span></div>
+<div class="rank-stat"><span class="rank-label">RR cumulé</span><span class="rank-val" style="color:${s.cumRR>=0?'var(--success)':'var(--danger)'}">${s.cumRR.toFixed(2)}R</span></div>
+<div class="rank-stat"><span class="rank-label">Wins</span><span class="rank-val" style="color:var(--success)">${s.wins}</span></div>
+<div class="rank-stat"><span class="rank-label">Losses</span><span class="rank-val" style="color:var(--danger)">${s.losses}</span></div>
+</div>
+`).join('');
+}
+
+renderGlobalStats();
+renderRanking();
+</script>
+</body>
+</html>
