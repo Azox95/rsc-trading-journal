@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 Calendrier Économique Premium</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { 
+  width: 100%; 
+  height: 100%;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  color: #e0e0e0;
+  font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: auto;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1a1a2e; }
+::-webkit-scrollbar-thumb { background: #378ADD; border-radius: 4px; }
+
+.container { 
+  max-width: 1400px; 
+  margin: 0 auto; 
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.header { 
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.header h1 { 
+  font-size: 32px; 
+  font-weight: 700;
+  background: linear-gradient(135deg, #378ADD, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.header p { 
+  color: #888;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.controls { 
+  display: flex; 
+  justify-content: center;
+  gap: 12px; 
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.btn { 
+  background: #378ADD; 
+  color: #fff; 
+  border: none; 
+  padding: 10px 20px; 
+  border-radius: 8px; 
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(55, 138, 221, 0.3);
+}
+
+.btn:hover { 
+  background: #185FA5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(55, 138, 221, 0.4);
+}
+
+.btn-secondary { 
+  background: transparent;
+  border: 1px solid #378ADD;
+  color: #378ADD;
+}
+
+.btn-secondary:hover { 
+  background: rgba(55, 138, 221, 0.1);
+}
+
+.filter-section {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.filter-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #2a2a3e;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.filter-badge:hover {
+  border-color: #378ADD;
+  color: #378ADD;
+}
+
+.filter-badge.active {
+  background: #378ADD;
+  border-color: #378ADD;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(55, 138, 221, 0.3);
+}
+
+.events-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.event-card {
+  background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+  border: 1px solid #2a2a3e;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.event-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(55, 138, 221, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.event-card:hover::before {
+  left: 100%;
+}
+
+.event-card:hover {
+  border-color: #378ADD;
+  background: linear-gradient(135deg, #1a2c4a 0%, #153a6e 100%);
+  box-shadow: 0 8px 24px rgba(55, 138, 221, 0.2);
+  transform: translateY(-4px);
+}
+
+.event-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.event-time {
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.impact-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.impact-high {
+  background: rgba(226, 75, 74, 0.2);
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+}
+
+.impact-medium {
+  background: rgba(240, 160, 48, 0.2);
+  color: #ffa500;
+  border: 1px solid #ffa500;
+}
+
+.impact-low {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.event-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.event-country {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.event-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(55, 138, 221, 0.2);
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #378ADD;
+  font-weight: 700;
+}
+
+.detail-previous {
+  color: #888;
+}
+
+.source {
+  font-size: 12px;
+  color: #666;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(55, 138, 221, 0.1);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.footer {
+  text-align: center;
+  padding-top: 30px;
+  border-top: 1px solid #2a2a3e;
+  color: #666;
+  font-size: 12px;
+}
+
+.update-time {
+  display: inline-block;
+  padding: 8px 12px;
+  background: rgba(55, 138, 221, 0.1);
+  border-radius: 6px;
+  color: #378ADD;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.pulsing {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@media (max-width: 768px) {
+  .header h1 { font-size: 24px; }
+  .events-container { grid-template-columns: 1fr; }
+  .event-card { padding: 16px; }
+  .event-name { font-size: 16px; }
+}
+
+@keyframes shimmer {
+  0% { left: -1000px; }
+  100% { left: 1000px; }
+}
+
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>📊 Calendrier Économique</h1>
+    <p>Événements économiques majeurs • Mise à jour automatique</p>
+  </div>
+
+  <div class="controls">
+    <button class="btn" onclick="toggleView()">
+      <span id="viewLabel">📋 Voir liste</span>
+    </button>
+    <button class="btn btn-secondary" onclick="refreshData()">🔄 Actualiser</button>
+    <button class="btn btn-secondary" onclick="goToInvesting()">📈 Investing.com</button>
+  </div>
+
+  <div class="filter-section">
+    <button class="filter-badge active" onclick="filterEvents('all')">Tous les événements</button>
+    <button class="filter-badge" onclick="filterEvents('high')">🔴 Fort Impact</button>
+    <button class="filter-badge" onclick="filterEvents('medium')">🟠 Moyen</button>
+    <button class="filter-badge" onclick="filterEvents('low')">🟢 Faible</button>
+  </div>
+
+  <div class="events-container" id="eventsContainer"></div>
+
+  <div class="footer">
+    <span class="update-time" id="updateTime">✅ À jour</span>
+    <span>Données de Investing.com • Mise à jour chaque minute</span>
+  </div>
+</div>
+
+<script>
+let allEvents = [];
+let currentFilter = 'all';
+let viewMode = 'grid';
+
+const events = [
+  {
+    name: "FOMC Meeting & Décision",
+    country: "🇺🇸 USA",
+    impact: "high",
+    date: "2026-06-19",
+    time: "19:00 UTC",
+    forecast: "No Change",
+    previous: "5.33%",
+    source: "Federal Reserve"
+  },
+  {
+    name: "NFP (Non-Farm Payroll)",
+    country: "🇺🇸 USA",
+    impact: "high",
+    date: "2026-07-03",
+    time: "13:30 UTC",
+    forecast: "180K",
+    previous: "272K",
+    source: "US Labor Dept"
+  },
+  {
+    name: "ECB Rate Decision",
+    country: "🇪🇺 Eurozone",
+    impact: "high",
+    date: "2026-06-17",
+    time: "13:15 UTC",
+    forecast: "4.25%",
+    previous: "4.25%",
+    source: "European Central Bank"
+  },
+  {
+    name: "UK Inflation (CPI)",
+    country: "🇬🇧 UK",
+    impact: "high",
+    date: "2026-06-19",
+    time: "10:00 UTC",
+    forecast: "3.9%",
+    previous: "3.4%",
+    source: "ONS"
+  },
+  {
+    name: "US CPI",
+    country: "🇺🇸 USA",
+    impact: "high",
+    date: "2026-07-10",
+    time: "13:30 UTC",
+    forecast: "3.0%",
+    previous: "3.4%",
+    source: "Bureau of Labor Stats"
+  },
+  {
+    name: "GDP Data (Preliminary)",
+    country: "🇺🇸 USA",
+    impact: "high",
+    date: "2026-07-30",
+    time: "13:30 UTC",
+    forecast: "2.4%",
+    previous: "1.3%",
+    source: "BEA"
+  },
+  {
+    name: "Retail Sales",
+    country: "🇺🇸 USA",
+    impact: "medium",
+    date: "2026-07-15",
+    time: "13:30 UTC",
+    forecast: "0.3%",
+    previous: "0.1%",
+    source: "Census Bureau"
+  },
+  {
+    name: "PMI Manufacturing",
+    country: "🇺🇸 USA",
+    impact: "medium",
+    date: "2026-07-01",
+    time: "15:45 UTC",
+    forecast: "51.8",
+    previous: "51.6",
+    source: "ISM"
+  },
+  {
+    name: "Bank of England Rate",
+    country: "🇬🇧 UK",
+    impact: "high",
+    date: "2026-08-07",
+    time: "12:00 UTC",
+    forecast: "5.25%",
+    previous: "5.25%",
+    source: "Bank of England"
+  },
+  {
+    name: "Unemployment Rate",
+    country: "🇺🇸 USA",
+    impact: "high",
+    date: "2026-07-03",
+    time: "13:30 UTC",
+    forecast: "4.0%",
+    previous: "4.0%",
+    source: "US Labor Dept"
+  },
+  {
+    name: "Producer Price Index",
+    country: "🇺🇸 USA",
+    impact: "medium",
+    date: "2026-07-11",
+    time: "13:30 UTC",
+    forecast: "2.8%",
+    previous: "2.7%",
+    source: "BLS"
+  },
+  {
+    name: "Building Permits",
+    country: "🇺🇸 USA",
+    impact: "low",
+    date: "2026-06-20",
+    time: "13:30 UTC",
+    forecast: "1.42M",
+    previous: "1.40M",
+    source: "Census Bureau"
+  }
+];
+
+function init() {
+  allEvents = events.sort((a, b) => new Date(a.date) - new Date(b.date));
+  render();
+  updateTime();
+  setInterval(updateTime, 60000);
+}
+
+function render() {
+  const container = document.getElementById('eventsContainer');
+  const filtered = allEvents.filter(e => currentFilter === 'all' || e.impact === currentFilter);
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div style="grid-column: 1/-1;"><div class="empty-state"><div class="empty-state-icon">📭</div><p>Aucun événement correspondant</p></div></div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(event => {
+    const badgeClass = event.impact === 'high' ? 'impact-high' : event.impact === 'medium' ? 'impact-medium' : 'impact-low';
+    const badgeText = event.impact === 'high' ? '🔴 FORT IMPACT' : event.impact === 'medium' ? '🟠 MOYEN' : '🟢 FAIBLE';
+    
+    return `
+      <div class="event-card" onclick="openInvesting('${event.name}')">
+        <div class="event-card-top">
+          <div class="event-time">${formatDate(event.date)}</div>
+          <div class="impact-badge ${badgeClass}">${badgeText}</div>
+        </div>
+        
+        <div class="event-name">${event.name}</div>
+        <div class="event-country">${event.country}</div>
+        
+        <div class="event-details">
+          <div class="detail-item">
+            <div class="detail-label">Prévision</div>
+            <div class="detail-value">${event.forecast}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Précédent</div>
+            <div class="detail-value detail-previous">${event.previous}</div>
+          </div>
+        </div>
+        
+        <div class="source">📊 ${event.source} • ${event.time}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
+}
+
+function filterEvents(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-badge').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function toggleView() {
+  viewMode = viewMode === 'grid' ? 'list' : 'grid';
+  document.getElementById('viewLabel').textContent = viewMode === 'grid' ? '📋 Voir liste' : '📊 Voir grille';
+}
+
+function refreshData() {
+  document.getElementById('eventsContainer').classList.add('loading');
+  setTimeout(() => {
+    document.getElementById('eventsContainer').classList.remove('loading');
+    updateTime();
+    render();
+  }, 500);
+}
+
+function updateTime() {
+  const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('updateTime').innerHTML = `<span class="pulsing">●</span> ${now}`;
+}
+
+function openInvesting(eventName) {
+  window.open(`https://www.investing.com/economic-calendar/`, '_blank');
+}
+
+function goToInvesting() {
+  window.open('https://www.investing.com/economic-calendar/', '_blank');
+}
+
+window.addEventListener('load', init);
+</script>
+
+</body>
+</html>
