@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSC Trading Journal V3 — Dashboard Premium</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1425;
+            --bg-lighter: #251c3a;
+            --border: #3d2e5f;
+            --text-primary: #ffffff;
+            --text-secondary: #b0a5c0;
+            --cyan: #a855f7;
+            --cyan-light: #d946ef;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --owen: #ffd700;
+            --nassim: #9d4edd;
+            --noa: #10b981;
+            --joseph: #f97316;
+            --tom: #3b82f6;
+        }
+
+        html, body { background-color: var(--bg-dark); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto; height: 100%; }
+        .app { display: flex; height: 100vh; }
+        .sidebar { width: 280px; background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-dark) 100%); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; position: fixed; height: 100vh; left: 0; top: 0; z-index: 1000; }
+        .sidebar-header { margin-bottom: 30px; border-bottom: 2px solid var(--cyan); padding-bottom: 15px; }
+        .sidebar-header h1 { font-size: 1.3em; color: var(--cyan); margin-bottom: 5px; }
+        .sidebar-header p { color: var(--text-secondary); font-size: 0.85em; }
+        .nav-section { margin-bottom: 30px; }
+        .nav-section-title { color: var(--text-secondary); font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .nav-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; color: var(--text-secondary); transition: all 0.3s; margin-bottom: 8px; border-left: 3px solid transparent; }
+        .nav-item:hover { background-color: rgba(168, 85, 247, 0.1); color: var(--cyan); border-left-color: var(--cyan); }
+        .nav-item.active { background-color: rgba(168, 85, 247, 0.2); color: var(--cyan); border-left-color: var(--cyan); font-weight: 600; }
+        .main { margin-left: 280px; flex: 1; overflow-y: auto; padding: 40px; }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-header { margin-bottom: 40px; }
+        .page-header h1 { font-size: 2.5em; margin-bottom: 10px; background: linear-gradient(135deg, var(--cyan), var(--cyan-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .page-header p { color: var(--text-secondary); font-size: 1.1em; }
+        .card { background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-lighter) 100%); border: 1px solid var(--border); border-radius: 16px; padding: 30px; margin-bottom: 30px; transition: all 0.3s; }
+        .card:hover { border-color: var(--cyan); box-shadow: 0 20px 60px rgba(168, 85, 247, 0.2); }
+        .card h2 { color: var(--cyan); font-size: 1.5em; margin-bottom: 20px; }
+        .collapsible { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(168, 85, 247, 0.05); border-radius: 8px; margin-bottom: 15px; transition: all 0.3s; }
+        .collapsible:hover { background: rgba(168, 85, 247, 0.1); }
+        .collapsible-icon { transition: transform 0.3s; }
+        .collapsible-icon.open { transform: rotate(180deg); }
+        .collapsible-content { display: none; padding: 15px 0; }
+        .collapsible-content.open { display: block; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric-card { background-color: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 12px; padding: 15px; transition: all 0.3s; }
+        .metric-card:hover { border-color: var(--cyan); background-color: rgba(168, 85, 247, 0.1); }
+        .metric-label { color: var(--text-secondary); font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .metric-value { color: var(--cyan); font-size: 1.8em; font-weight: 700; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { color: var(--text-secondary); font-size: 0.85em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea { background-color: var(--bg-dark); border: 1px solid var(--border); color: var(--text-primary); padding: 10px 12px; border-radius: 8px; font-size: 0.95em; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
+        .form-group textarea { grid-column: 1 / -1; resize: vertical; min-height: 80px; }
+        .btn { background: linear-gradient(135deg, var(--cyan), var(--cyan-light)); color: var(--bg-dark); border: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95em; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4); }
+        .btn-secondary { background: var(--bg-lighter); color: var(--cyan); border: 1px solid var(--cyan); }
+        .btn-secondary:hover { background: rgba(168, 85, 247, 0.1); }
+        .message { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: none; animation: slideDown 0.3s; }
+        .message.show { display: block; }
+        .message.success { background-color: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); color: var(--success); }
+        .message.error { background-color: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        thead { background-color: rgba(168, 85, 247, 0.1); border-bottom: 2px solid var(--cyan); }
+        th { color: var(--cyan); padding: 12px; text-align: left; font-weight: 600; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); }
+        tbody tr:hover { background-color: rgba(168, 85, 247, 0.05); }
+        .chart-container { background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-lighter) 100%); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 20px; position: relative; height: 400px; }
+        .chart-wrapper { position: relative; height: 340px; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); flex-wrap: wrap; }
+        .tab-btn { background: none; border: none; color: var(--text-secondary); padding: 12px 20px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.3s; }
+        .tab-btn:hover, .tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 20px; }
+        .calendar-day { background: var(--bg-lighter); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; min-height: 60px; cursor: pointer; transition: all 0.3s; }
+        .calendar-day:hover { border-color: var(--cyan); }
+        .calendar-day.today { border-color: var(--cyan); background: rgba(168, 85, 247, 0.1); }
+        .calendar-day .day-num { font-weight: 700; color: var(--cyan); }
+        .calendar-day .trades-count { font-size: 0.75em; color: var(--text-secondary); }
+        @media (max-width: 1024px) {
+            .sidebar { width: 200px; }
+            .main { margin-left: 200px; padding: 20px; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .app { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; padding: 15px; }
+            .sidebar-header { margin-bottom: 0; border-bottom: none; border-right: 1px solid var(--border); padding-right: 15px; }
+            .nav-section { display: flex; gap: 10px; margin-bottom: 0; }
+            .nav-item { margin-bottom: 0; padding: 8px 12px; font-size: 0.85em; }
+            .main { margin-left: 0; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>📊 RSC</h1>
+                <p>Trading Journal V3</p>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Dashboards</div>
+                <div class="nav-item active" data-page="dashboard-global">🌍 Global</div>
+                <div class="nav-item" data-page="dashboard-owen">🟡 Owen</div>
+                <div class="nav-item" data-page="dashboard-nassim">🟣 Nassim</div>
+                <div class="nav-item" data-page="dashboard-noa">🟢 Noa</div>
+                <div class="nav-item" data-page="dashboard-joseph">🟠 Joseph</div>
+                <div class="nav-item" data-page="dashboard-tom">🔵 Tom</div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Données</div>
+                <div class="nav-item" data-page="add-trade">➕ Ajouter Trade</div>
+                <div class="nav-item" data-page="import-trades">📤 Importer Tableau</div>
+                <div class="nav-item" data-page="journal">📈 Journal</div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Autres</div>
+                <div class="nav-item" data-page="parametres">⚙️ Paramètres</div>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+            <!-- DASHBOARD GLOBAL -->
+            <div id="dashboard-global" class="page active">
+                <div class="page-header">
+                    <h1>Dashboard Global</h1>
+                    <p>Performance totale et analyse complète</p>
+                </div>
+
+                <div id="global-metrics"></div>
+
+                <!-- TABS -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="overview">Overview</button>
+                    <button class="tab-btn" data-tab="analytics">Analytics</button>
+                    <button class="tab-btn" data-tab="calendar">Calendar</button>
+                </div>
+
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-content active">
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <h3 style="color: var(--cyan); margin-bottom: 15px;">📈 Equity Curve</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-equity"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3 style="color: var(--cyan); margin-bottom: 15px;">📊 Win/Loss Distribution</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-results"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics" class="tab-content">
+                    <div class="card">
+                        <h2>🏆 Classement Traders</h2>
+                        <div id="traders-ranking"></div>
+                    </div>
+                    <div class="card">
+                        <h2>🪙 Performance par Paire</h2>
+                        <div id="pairs-stats"></div>
+                    </div>
+                </div>
+
+                <!-- Calendar Tab -->
+                <div id="calendar" class="tab-content">
+                    <div class="card">
+                        <h2>📅 Vue Calendar</h2>
+                        <div id="calendar-view"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AJOUTER TRADE MANUEL -->
+            <div id="add-trade" class="page">
+                <div class="page-header">
+                    <h1>➕ Ajouter un Trade</h1>
+                    <p>Formulaire manuel pour enregistrer vos trades</p>
+                </div>
+                <div class="card">
+                    <div id="add-trade-message"></div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Actif / Paire</label>
+                            <input type="text" id="trade-pair" placeholder="EURUSD" style="text-transform: uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label>Mois</label>
+                            <select id="trade-month">
+                                <option value="">-- Sélectionner --</option>
+                                <option value="JANVIER">JANVIER</option>
+                                <option value="FEVRIER">FEVRIER</option>
+                                <option value="MARS">MARS</option>
+                                <option value="AVRIL">AVRIL</option>
+                                <option value="MAI">MAI</option>
+                                <option value="JUIN">JUIN</option>
+                                <option value="JUILLET">JUILLET</option>
+                                <option value="AOUT">AOUT</option>
+                                <option value="SEPTEMBRE">SEPTEMBRE</option>
+                                <option value="OCTOBRE">OCTOBRE</option>
+                                <option value="NOVEMBRE">NOVEMBRE</option>
+                                <option value="DECEMBRE">DECEMBRE</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Dates</label>
+                            <input type="text" id="trade-dates" placeholder="06/01/25 ou 06/01/25→07/01/25">
+                        </div>
+                        <div class="form-group">
+                            <label>RR (Résultat R)</label>
+                            <input type="text" id="trade-rr" placeholder="2.5R ou -1R ou BE">
+                        </div>
+                        <div class="form-group">
+                            <label>Tendance</label>
+                            <select id="trade-trend">
+                                <option value="">-- Sélectionner --</option>
+                                <option value="ACHETEUR">ACHETEUR</option>
+                                <option value="VENDEUR">VENDEUR</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Trader</label>
+                            <select id="trade-trader">
+                                <option value="">-- Sélectionner --</option>
+                                <option value="Owen">🟡 Owen</option>
+                                <option value="Nassim">🟣 Nassim</option>
+                                <option value="Noa">🟢 Noa</option>
+                                <option value="Joseph">🟠 Joseph</option>
+                                <option value="Tom">🔵 Tom</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select id="trade-type">
+                                <option value="Journal">📈 Journal</option>
+                                <option value="Backtesting">🔬 Backtesting</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="addTradeManual()" style="width: 100%; padding: 14px; margin-top: 15px;">✅ Ajouter Trade</button>
+                </div>
+            </div>
+
+            <!-- IMPORTER TABLEAU -->
+            <div id="import-trades" class="page">
+                <div class="page-header">
+                    <h1>📤 Importer Tableau</h1>
+                    <p>Colle-colle ton tableau Excel/CSV directement</p>
+                </div>
+                <div class="card">
+                    <h2>Configuration Import</h2>
+                    <div class="form-grid" style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label>Trader Propriétaire (si pas dans le tableau)</label>
+                            <select id="import-default-trader">
+                                <option value="">-- Auto-détection --</option>
+                                <option value="Owen">🟡 Owen</option>
+                                <option value="Nassim">🟣 Nassim</option>
+                                <option value="Noa">🟢 Noa</option>
+                                <option value="Joseph">🟠 Joseph</option>
+                                <option value="Tom">🔵 Tom</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Type de Trade</label>
+                            <select id="import-default-type">
+                                <option value="Journal">📈 Journal</option>
+                                <option value="Backtesting">🔬 Backtesting</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">Format accepté</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9em;">
+                        <strong>Option 1 (5 colonnes):</strong> ACTIF | MOIS | DATES | RR | TENDANCE
+                    </p>
+                    <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.85em;">
+                        Ex: EURUSD | JANVIER | 06/01/25 | 2.5R | ACHETEUR
+                    </p>
+
+                    <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9em;">
+                        <strong>Option 2 (6 colonnes - avec Trader):</strong> ACTIF | MOIS | DATES | RR | TENDANCE | TRADER
+                    </p>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.85em;">
+                        Ex: EURUSD | JANVIER | 06/01/25 | 2.5R | ACHETEUR | Owen
+                    </p>
+
+                    <div id="import-message"></div>
+                    <textarea id="import-data" style="grid-column: 1 / -1;" placeholder="Colle tes données ici..."></textarea>
+                    <button class="btn" onclick="importTableau()" style="margin-right: 10px;">📥 Importer</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('import-data').value = ''">❌ Effacer</button>
+                </div>
+            </div>
+
+            <!-- JOURNAL -->
+            <div id="journal" class="page">
+                <div class="page-header">
+                    <h1>📈 Journal Complet</h1>
+                    <p>Historique de tous vos trades</p>
+                </div>
+                <div class="card">
+                    <h2>Trades</h2>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Trader</th>
+                                    <th>Paire</th>
+                                    <th>Mois</th>
+                                    <th>Tendance</th>
+                                    <th>RR</th>
+                                    <th>Type</th>
+                                    <th>Résultat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="journal-tbody">
+                                <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">Aucun trade</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARDS INDIVIDUELS -->
+            <div id="dashboard-owen" class="page"></div>
+            <div id="dashboard-nassim" class="page"></div>
+            <div id="dashboard-noa" class="page"></div>
+            <div id="dashboard-joseph" class="page"></div>
+            <div id="dashboard-tom" class="page"></div>
+
+            <!-- PARAMETRES -->
+            <div id="parametres" class="page">
+                <div class="page-header">
+                    <h1>⚙️ Paramètres</h1>
+                    <p>Gestion des données</p>
+                </div>
+                <div class="card">
+                    <h2>Outils</h2>
+                    <button class="btn" onclick="exportData()" style="margin-right: 10px;">📥 Exporter JSON</button>
+                    <button class="btn btn-secondary" onclick="clearAllData()" style="background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: var(--danger);">🗑️ Effacer Tout</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // CONFIG
+        const TRADERS = {
+            Owen: { color: '#ffd700', emoji: '🟡' },
+            Nassim: { color: '#9d4edd', emoji: '🟣' },
+            Noa: { color: '#10b981', emoji: '🟢' },
+            Joseph: { color: '#f97316', emoji: '🟠' },
+            Tom: { color: '#3b82f6', emoji: '🔵' }
+        };
+
+        // DATA
+        let trades = JSON.parse(localStorage.getItem('rsc_trades_v3') || '[]');
+
+        function saveTrades() {
+            localStorage.setItem('rsc_trades_v3', JSON.stringify(trades));
+            updateAll();
+        }
+
+        function parseRR(rrStr) {
+            const cleaned = rrStr.trim().toUpperCase().replace(/,/, '.');
+            if (cleaned === 'BE' || cleaned === '0') return { value: 0, result: 'BE' };
+            const num = parseFloat(cleaned.replace(/[R+]/g, ''));
+            if (isNaN(num)) return null;
+            if (num > 0) return { value: num, result: 'WIN' };
+            if (num < 0) return { value: num, result: 'LOSS' };
+            return { value: 0, result: 'BE' };
+        }
+
+        function addTradeManual() {
+            const pair = document.getElementById('trade-pair').value.toUpperCase();
+            const month = document.getElementById('trade-month').value;
+            const dates = document.getElementById('trade-dates').value;
+            const rrStr = document.getElementById('trade-rr').value;
+            const trend = document.getElementById('trade-trend').value;
+            const trader = document.getElementById('trade-trader').value;
+            const type = document.getElementById('trade-type').value;
+            const msgEl = document.getElementById('add-trade-message');
+
+            if (!pair || !month || !dates || !rrStr || !trend || !trader) {
+                msgEl.className = 'message show error';
+                msgEl.textContent = '❌ Remplis tous les champs';
+                return;
+            }
+
+            const rrData = parseRR(rrStr);
+            if (!rrData) {
+                msgEl.className = 'message show error';
+                msgEl.textContent = '❌ RR invalide (2.5R, -1R, BE)';
+                return;
+            }
+
+            const trade = {
+                id: Date.now(),
+                pair,
+                month,
+                dates,
+                rr: rrData.value,
+                rrDisplay: rrStr,
+                result: rrData.result,
+                trend,
+                trader,
+                type,
+                timestamp: new Date().toISOString()
+            };
+
+            trades.push(trade);
+            saveTrades();
+
+            msgEl.className = 'message show success';
+            msgEl.textContent = `✅ Trade ajouté pour ${trader}!`;
+            
+            document.getElementById('trade-pair').value = '';
+            document.getElementById('trade-month').value = '';
+            document.getElementById('trade-dates').value = '';
+            document.getElementById('trade-rr').value = '';
+            document.getElementById('trade-trend').value = '';
+            document.getElementById('trade-trader').value = '';
+
+            setTimeout(() => msgEl.textContent = '', 2000);
+        }
+
+        function importTableau() {
+            const text = document.getElementById('import-data').value;
+            const defaultTrader = document.getElementById('import-default-trader').value;
+            const defaultType = document.getElementById('import-default-type').value;
+            const msgEl = document.getElementById('import-message');
+
+            if (!text.trim()) {
+                msgEl.className = 'message show error';
+                msgEl.textContent = '❌ Colle tes données';
+                return;
+            }
+
+            const newTrades = text.split('\n')
+                .filter(l => l.trim())
+                .map(line => {
+                    const parts = line.split(/\t|\|/).map(p => p.trim()).filter(p => p);
+                    if (parts.length < 5) return null;
+
+                    const pair = parts[0].toUpperCase();
+                    const month = parts[1].toUpperCase();
+                    const dates = parts[2];
+                    const rrStr = parts[3];
+                    const trend = parts[4].toUpperCase();
+                    
+                    // Trader: colonne 6 si elle existe, sinon utilise le défaut, sinon Owen
+                    let trader = parts[5] ? parts[5].trim() : defaultTrader;
+                    if (!trader) trader = 'Owen';
+                    
+                    // Valider que c'est un trader connu
+                    if (!Object.keys(TRADERS).includes(trader)) {
+                        trader = 'Owen'; // Fallback
+                    }
+
+                    const rrData = parseRR(rrStr);
+                    if (!rrData || !pair.match(/^[A-Z]{6}$/)) return null;
+
+                    return {
+                        id: Date.now() + Math.random(),
+                        pair,
+                        month,
+                        dates,
+                        rr: rrData.value,
+                        rrDisplay: rrStr,
+                        result: rrData.result,
+                        trend,
+                        trader,
+                        type: defaultType,
+                        timestamp: new Date().toISOString()
+                    };
+                })
+                .filter(t => t !== null);
+
+            if (!newTrades.length) {
+                msgEl.className = 'message show error';
+                msgEl.textContent = '❌ Aucun trade valide. Vérifie le format: ACTIF | MOIS | DATES | RR | TENDANCE [| TRADER]';
+                return;
+            }
+
+            trades.push(...newTrades);
+            saveTrades();
+
+            const traderInfo = defaultTrader ? ` pour ${defaultTrader}` : '';
+            msgEl.className = 'message show success';
+            msgEl.textContent = `✅ ${newTrades.length} trade(s) importé(s)${traderInfo}!`;
+            document.getElementById('import-data').value = '';
+
+            setTimeout(() => msgEl.textContent = '', 3000);
+        }
+
+        function getTraderStats(trader) {
+            const traderTrades = trades.filter(t => t.trader === trader);
+            const wins = traderTrades.filter(t => t.result === 'WIN').length;
+            const losses = traderTrades.filter(t => t.result === 'LOSS').length;
+            const be = traderTrades.filter(t => t.result === 'BE').length;
+            const totalR = traderTrades.reduce((s, t) => s + t.rr, 0);
+            const winR = traderTrades.filter(t => t.result === 'WIN').reduce((s, t) => s + t.rr, 0);
+            const lossR = Math.abs(traderTrades.filter(t => t.result === 'LOSS').reduce((s, t) => s + t.rr, 0));
+            const avg = traderTrades.length > 0 ? totalR / traderTrades.length : 0;
+
+            // Consecutive wins/losses
+            let maxConsecWins = 0, currentConsecWins = 0;
+            let maxConsecLoss = 0, currentConsecLoss = 0;
+            traderTrades.forEach(t => {
+                if (t.result === 'WIN') {
+                    currentConsecWins++;
+                    maxConsecWins = Math.max(maxConsecWins, currentConsecWins);
+                    currentConsecLoss = 0;
+                } else if (t.result === 'LOSS') {
+                    currentConsecLoss++;
+                    maxConsecLoss = Math.max(maxConsecLoss, currentConsecLoss);
+                    currentConsecWins = 0;
+                } else {
+                    currentConsecWins = 0;
+                    currentConsecLoss = 0;
+                }
+            });
+
+            return {
+                total: traderTrades.length,
+                wins,
+                losses,
+                be,
+                winrate: traderTrades.length > 0 ? ((wins / traderTrades.length) * 100).toFixed(1) : 0,
+                totalR: totalR.toFixed(2),
+                profitFactor: lossR > 0 ? (winR / lossR).toFixed(2) : (winR > 0 ? 999 : 0),
+                avgR: avg.toFixed(2),
+                maxConsecWins,
+                maxConsecLoss,
+                trades: traderTrades
+            };
+        }
+
+        function getGlobalStats() {
+            if (!trades.length) {
+                return {
+                    total: 0, wins: 0, losses: 0, be: 0,
+                    winrate: 0, totalR: '0.00', profitFactor: 0,
+                    journal: 0, backtesting: 0
+                };
+            }
+
+            const wins = trades.filter(t => t.result === 'WIN').length;
+            const losses = trades.filter(t => t.result === 'LOSS').length;
+            const be = trades.filter(t => t.result === 'BE').length;
+            const totalR = trades.reduce((s, t) => s + t.rr, 0);
+            const winR = trades.filter(t => t.result === 'WIN').reduce((s, t) => s + t.rr, 0);
+            const lossR = Math.abs(trades.filter(t => t.result === 'LOSS').reduce((s, t) => s + t.rr, 0));
+
+            return {
+                total: trades.length,
+                wins,
+                losses,
+                be,
+                winrate: trades.length > 0 ? ((wins / trades.length) * 100).toFixed(1) : 0,
+                totalR: totalR.toFixed(2),
+                profitFactor: lossR > 0 ? (winR / lossR).toFixed(2) : (winR > 0 ? 999 : 0),
+                journal: trades.filter(t => t.type === 'Journal').length,
+                backtesting: trades.filter(t => t.type === 'Backtesting').length
+            };
+        }
+
+        function updateGlobalDashboard() {
+            const stats = getGlobalStats();
+
+            const metricsHTML = `
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Trades</div>
+                        <div class="metric-value">${stats.total}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Win Rate</div>
+                        <div class="metric-value">${stats.winrate}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total R</div>
+                        <div class="metric-value">${stats.totalR}R</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Profit Factor</div>
+                        <div class="metric-value">${stats.profitFactor}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Wins</div>
+                        <div class="metric-value" style="color: var(--success);">${stats.wins}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Losses</div>
+                        <div class="metric-value" style="color: var(--danger);">${stats.losses}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Journal</div>
+                        <div class="metric-value">${stats.journal}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Backtesting</div>
+                        <div class="metric-value">${stats.backtesting}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('global-metrics').innerHTML = metricsHTML;
+
+            // Ranking
+            const ranking = Object.keys(TRADERS)
+                .map(trader => ({
+                    trader,
+                    ...getTraderStats(trader)
+                }))
+                .sort((a, b) => parseFloat(b.totalR) - parseFloat(a.totalR));
+
+            const rankingHTML = `
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rang</th>
+                                <th>Trader</th>
+                                <th>Trades</th>
+                                <th>Win%</th>
+                                <th>Total R</th>
+                                <th>Avg R</th>
+                                <th>PF</th>
+                                <th>Max W</th>
+                                <th>Max L</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ranking.map((r, i) => `
+                                <tr>
+                                    <td>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
+                                    <td><span style="color: ${TRADERS[r.trader].color}; font-weight: 700;">${TRADERS[r.trader].emoji} ${r.trader}</span></td>
+                                    <td>${r.total}</td>
+                                    <td>${r.winrate}%</td>
+                                    <td style="color: ${r.totalR > 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">${r.totalR}R</td>
+                                    <td>${r.avgR}R</td>
+                                    <td>${r.profitFactor}</td>
+                                    <td>${r.maxConsecWins}</td>
+                                    <td>${r.maxConsecLoss}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('traders-ranking').innerHTML = rankingHTML;
+
+            // Pairs Stats
+            const pairStats = {};
+            trades.forEach(t => {
+                if (!pairStats[t.pair]) {
+                    pairStats[t.pair] = { total: 0, wins: 0, totalR: 0, trades: [] };
+                }
+                pairStats[t.pair].total++;
+                if (t.result === 'WIN') pairStats[t.pair].wins++;
+                pairStats[t.pair].totalR += t.rr;
+                pairStats[t.pair].trades.push(t);
+            });
+
+            const pairsHTML = `
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Paire</th>
+                                <th>Trades</th>
+                                <th>Win%</th>
+                                <th>Total R</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(pairStats)
+                                .sort((a, b) => b[1].totalR - a[1].totalR)
+                                .map(([pair, stats]) => `
+                                    <tr>
+                                        <td><strong>${pair}</strong></td>
+                                        <td>${stats.total}</td>
+                                        <td>${stats.total > 0 ? ((stats.wins / stats.total) * 100).toFixed(1) : 0}%</td>
+                                        <td style="color: ${stats.totalR > 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">${stats.totalR.toFixed(2)}R</td>
+                                    </tr>
+                                `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('pairs-stats').innerHTML = pairsHTML;
+
+            updateCharts();
+            updateCalendar();
+        }
+
+        function updateTraderDashboard(trader) {
+            const page = document.getElementById(`dashboard-${trader.toLowerCase()}`);
+            const stats = getTraderStats(trader);
+            const config = TRADERS[trader];
+
+            const html = `
+                <div class="page-header">
+                    <h1 style="color: ${config.color};">${config.emoji} ${trader}</h1>
+                    <p>Statistiques personnelles détaillées</p>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Trades</div>
+                        <div class="metric-value">${stats.total}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Win Rate</div>
+                        <div class="metric-value">${stats.winrate}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total R</div>
+                        <div class="metric-value" style="color: ${stats.totalR > 0 ? 'var(--success)' : 'var(--danger)'};">${stats.totalR}R</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Profit Factor</div>
+                        <div class="metric-value">${stats.profitFactor}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Avg R</div>
+                        <div class="metric-value">${stats.avgR}R</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Max Consec W</div>
+                        <div class="metric-value" style="color: var(--success);">${stats.maxConsecWins}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Max Consec L</div>
+                        <div class="metric-value" style="color: var(--danger);">${stats.maxConsecLoss}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Wins / Losses</div>
+                        <div class="metric-value">${stats.wins} / ${stats.losses}</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Historique</h2>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Paire</th>
+                                    <th>Tendance</th>
+                                    <th>RR</th>
+                                    <th>Résultat</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${stats.trades.length > 0 ? stats.trades.map(t => `
+                                    <tr>
+                                        <td>${t.dates}</td>
+                                        <td><strong>${t.pair}</strong></td>
+                                        <td>${t.trend}</td>
+                                        <td>${t.rrDisplay}</td>
+                                        <td style="color: ${t.result === 'WIN' ? 'var(--success)' : t.result === 'LOSS' ? 'var(--danger)' : 'var(--text-secondary)'}; font-weight: 600;">${t.result}</td>
+                                        <td>${t.type}</td>
+                                    </tr>
+                                `).join('') : '<tr><td colspan="6" style="text-align: center;">Aucun trade</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            page.innerHTML = html;
+        }
+
+        function updateJournal() {
+            const journalTrades = trades.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const html = journalTrades.length > 0 ? journalTrades.map(t => `
+                <tr>
+                    <td>${t.dates}</td>
+                    <td><span style="color: ${TRADERS[t.trader].color}; font-weight: 700;">${TRADERS[t.trader].emoji} ${t.trader}</span></td>
+                    <td><strong>${t.pair}</strong></td>
+                    <td>${t.month}</td>
+                    <td>${t.trend}</td>
+                    <td>${t.rrDisplay}</td>
+                    <td>${t.type}</td>
+                    <td style="color: ${t.result === 'WIN' ? 'var(--success)' : t.result === 'LOSS' ? 'var(--danger)' : 'var(--text-secondary)'}; font-weight: 600;">${t.result}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="8" style="text-align: center;">Aucun trade</td></tr>';
+
+            document.getElementById('journal-tbody').innerHTML = html;
+        }
+
+        function updateCharts() {
+            if (!trades.length) return;
+
+            // Equity
+            let equity = 0;
+            const curve = [0];
+            trades.forEach(t => {
+                equity += t.rr;
+                curve.push(equity);
+            });
+
+            const ctx1 = document.getElementById('chart-equity');
+            if (ctx1.chart) ctx1.chart.destroy();
+            ctx1.chart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: curve.length}, (_, i) => i),
+                    datasets: [{
+                        label: 'Equity',
+                        data: curve,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: '#b0a5c0' }, grid: { color: '#3d2e5f' } },
+                        x: { ticks: { color: '#b0a5c0' }, grid: { color: '#3d2e5f' } }
+                    }
+                }
+            });
+
+            // Results
+            const wins = trades.filter(t => t.result === 'WIN').length;
+            const losses = trades.filter(t => t.result === 'LOSS').length;
+            const be = trades.filter(t => t.result === 'BE').length;
+
+            const ctx2 = document.getElementById('chart-results');
+            if (ctx2.chart) ctx2.chart.destroy();
+            ctx2.chart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Wins', 'Losses', 'BE'],
+                    datasets: [{
+                        data: [wins, losses, be],
+                        backgroundColor: ['#10b981', '#ef4444', '#6b7280']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#b0a5c0' } } }
+                }
+            });
+        }
+
+        function updateCalendar() {
+            // Simple calendar for current month
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            const tradesByDate = {};
+            trades.forEach(t => {
+                const dateStr = t.dates.split('→')[0];
+                tradesByDate[dateStr] = (tradesByDate[dateStr] || 0) + 1;
+            });
+
+            let html = '<div class="calendar">';
+
+            // Day headers
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+                html += `<div style="text-align: center; color: var(--cyan); font-weight: 700;">${day}</div>`;
+            });
+
+            // Empty cells before first day
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                html += '<div></div>';
+            }
+
+            // Days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${String(year).slice(-2)}`;
+                const isToday = day === now.getDate();
+                const count = tradesByDate[dateStr] || 0;
+
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}">
+                        <div class="day-num">${day}</div>
+                        ${count > 0 ? `<div class="trades-count">${count} trade${count > 1 ? 's' : ''}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            document.getElementById('calendar-view').innerHTML = html;
+        }
+
+        function updateAll() {
+            updateGlobalDashboard();
+            Object.keys(TRADERS).forEach(trader => updateTraderDashboard(trader));
+            updateJournal();
+        }
+
+        function exportData() {
+            const data = { trades, exportDate: new Date().toISOString() };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rsc-trades-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ Êtes-vous certain? Cette action supprimera TOUS les données!')) {
+                trades = [];
+                saveTrades();
+                alert('✅ Supprimé');
+            }
+        }
+
+        // NAVIGATION
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                item.classList.add('active');
+                const pageId = item.dataset.page;
+                document.getElementById(pageId).classList.add('active');
+            });
+        });
+
+        // TABS
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // COLLAPSIBLES
+        document.querySelectorAll('.collapsible').forEach(el => {
+            el.addEventListener('click', () => {
+                el.classList.toggle('open');
+                el.nextElementSibling?.classList.toggle('open');
+                el.querySelector('.collapsible-icon')?.classList.toggle('open');
+            });
+        });
+
+        // INIT
+        updateAll();
+    </script>
+</body>
+</html>
