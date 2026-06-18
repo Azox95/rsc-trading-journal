@@ -38,8 +38,8 @@ textarea { resize: vertical; min-height: 300px; margin-bottom: 16px; }
 
 .btn { background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
 .btn:hover { background: #185FA5; }
-.btn.secondary { background: var(--text3); color: var(--text); }
-.btn.secondary:hover { background: var(--text2); }
+.btn.secondary { background: #555; color: var(--text); }
+.btn.secondary:hover { background: #666; }
 
 .info { background: #1a2a1a; border: 1px solid #2a3a2a; border-radius: 6px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: var(--success); }
 
@@ -48,10 +48,10 @@ textarea { resize: vertical; min-height: 300px; margin-bottom: 16px; }
 .result.success { border-color: var(--success); color: var(--success); }
 .result.error { border-color: var(--danger); color: var(--danger); }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
-.stat { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
-.stat-value { font-size: 20px; font-weight: 600; color: var(--primary); }
-.stat-label { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.preview-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 16px; }
+.preview-table th, .preview-table td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.preview-table th { background: var(--bg3); color: var(--text2); font-weight: 600; }
+.preview-table tr:hover { background: var(--bg3); }
 </style>
 </head>
 <body>
@@ -90,11 +90,39 @@ textarea { resize: vertical; min-height: 300px; margin-bottom: 16px; }
 </div>
 
 <div id="result" class="result"></div>
+
+<div id="preview-section" style="display:none;">
+<div class="card">
+<div class="card-title">✅ Données importées avec succès !</div>
+<table class="preview-table">
+<thead>
+<tr>
+<th>Paire</th>
+<th>Date</th>
+<th>Direction</th>
+<th>RR</th>
+<th>Résultat</th>
+</tr>
+</thead>
+<tbody id="preview-body"></tbody>
+</table>
+<div style="margin-top: 16px; display: flex; gap: 8px;">
+<button class="btn" onclick="copyToClipboard()">📋 Copier les données</button>
+<button class="btn" onclick="redirectToJournal()">➡️ Aller au journal</button>
+<button class="btn secondary" onclick="resetForm()">↩️ Importer à nouveau</button>
+</div>
+</div>
+</div>
+
 </div>
 
 <script>
 const MEMBERS = ['Nassim','Noa','Joseph','Owen','Nedrix'];
-const PAIRS = ['EUR/USD','GBP/USD','USD/JPY','AUD/USD','EUR/JPY','GBP/JPY','USD/CHF','USD/CAD','EUR/GBP','EUR/AUD','GBP/AUD','AUD/JPY','AUD/CAD','CAD/JPY','EUR/CAD','GBP/CAD','EURUSD','GBPUSD','USDJPY','AUDUSD','EURJPY','GBPJPY','USDCHF','USDCAD','EURGBP','EURAUD','GBPAUD','AUDJPY','AUDCAD','CADJPY','EURCAD','GBPCAD','AUDJPY'];
+const PAIRS = ['EUR/USD','GBP/USD','USD/JPY','AUD/USD','EUR/JPY','GBP/JPY','USD/CHF','USD/CAD','EUR/GBP','EUR/AUD','GBP/AUD','AUD/JPY','AUD/CAD','CAD/JPY','EUR/CAD','GBP/CAD','EURUSD','GBPUSD','USDJPY','AUDUSD','EURJPY','GBPJPY','USDCHF','USDCAD','EURGBP','EURAUD','GBPAUD','AUDJPY','AUDCAD','CADJPY','EURCAD','GBPCAD'];
+
+let lastImportedData = [];
+let lastImportedType = '';
+let lastImportedTrader = '';
 
 function loadTrades(m) { try { return JSON.parse(localStorage.getItem('rsc_trades_'+m)||'[]'); } catch(e) { return []; } }
 function saveTrades(m,t) { try { localStorage.setItem('rsc_trades_'+m, JSON.stringify(t)); } catch(e) {} }
@@ -108,6 +136,53 @@ el.textContent = msg;
 el.classList.toggle('success', isSuccess);
 el.classList.toggle('error', !isSuccess);
 el.classList.add('show');
+}
+
+function displayPreview(data) {
+const previewEl = document.getElementById('preview-section');
+const tbody = document.getElementById('preview-body');
+lastImportedData = data;
+
+let html = '';
+data.slice(0, 20).forEach((item) => {
+const resultColor = item.result === 'WIN' ? 'var(--success)' : 'var(--danger)';
+html += `<tr>
+<td>${item.pair}</td>
+<td>${item.date}</td>
+<td>${item.dir}</td>
+<td>${item.rr}</td>
+<td style="color: ${resultColor}; font-weight: 600;">${item.result}</td>
+</tr>`;
+});
+
+tbody.innerHTML = html;
+previewEl.style.display = 'block';
+}
+
+function resetForm() {
+document.getElementById('tableau').value = '';
+document.getElementById('preview-section').style.display = 'none';
+document.getElementById('result').classList.remove('show');
+}
+
+function copyToClipboard() {
+let text = `${lastImportedType === 'trades' ? 'TRADES' : 'BACKTESTS'} - ${lastImportedTrader}\n\n`;
+text += 'Pair | Date | Dir | RR | Result\n';
+text += '--- | --- | --- | --- | ---\n';
+lastImportedData.forEach(item => {
+text += `${item.pair} | ${item.date} | ${item.dir} | ${item.rr} | ${item.result}\n`;
+});
+navigator.clipboard.writeText(text).then(() => {
+alert('✅ Données copiées !');
+});
+}
+
+function redirectToJournal() {
+const type = lastImportedType;
+const url = type === 'trades' 
+? 'https://azox95.github.io/rsc-trading-journal/trading-journal.html'
+: 'https://azox95.github.io/rsc-trading-journal/backtesting-journal.html';
+window.location.href = url;
 }
 
 function parsePair(text) {
@@ -153,11 +228,15 @@ const trader = document.getElementById('trader').value;
 const type = document.getElementById('type').value;
 const tableau = document.getElementById('tableau').value.trim();
 
+lastImportedTrader = trader;
+lastImportedType = type;
+
 if(!tableau) { showResult('❌ Colle un tableau d\'abord !', false); return; }
 
 try {
 const lines = tableau.split('\n').filter(l => l.trim() && !l.includes('---'));
 let added = 0;
+let newData = [];
 
 if(type === 'trades') {
 const currentTrades = loadTrades(trader);
@@ -170,7 +249,7 @@ const rr = parseRR(parts[3]);
 const dir = parseDirection(parts[4] || parts[1]);
 
 if(pair && date && rr !== null) {
-currentTrades.push({
+const newTrade = {
 date, pair, dir,
 tf: '15M',
 session: '',
@@ -178,7 +257,9 @@ rr, risk: 1,
 result: parseResult(parts[3]),
 notes: '',
 ote: false, liq: false, smt: false
-});
+};
+currentTrades.push(newTrade);
+newData.push(newTrade);
 added++;
 }
 }
@@ -195,14 +276,16 @@ const rr = parseRR(parts[3]);
 const dir = parseDirection(parts[4] || parts[1]);
 
 if(pair && date && rr !== null) {
-currentBacktests.push({
+const newBacktest = {
 date, pair, dir,
 tf: '15M',
 rr,
 result: parseResult(parts[3]),
 strategy: '',
 notes: ''
-});
+};
+currentBacktests.push(newBacktest);
+newData.push(newBacktest);
 added++;
 }
 }
@@ -211,13 +294,7 @@ saveBacktests(trader, currentBacktests);
 }
 
 showResult(`✅ ${added} ${type === 'trades' ? 'trades' : 'backtests'} ajoutés pour ${trader} !`, true);
-document.getElementById('tableau').value = '';
-
-setTimeout(() => {
-window.location.href = type === 'trades' 
-? 'https://azox95.github.io/rsc-trading-journal/trading-journal.html'
-: 'https://azox95.github.io/rsc-trading-journal/backtesting-journal.html';
-}, 1500);
+displayPreview(newData);
 
 } catch(e) {
 showResult('❌ Erreur: '+e.message, false);
